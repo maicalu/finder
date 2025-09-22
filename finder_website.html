@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #fff;
+            color: #3c4043;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #dadce0;
+        }
+
+        .logo {
+            font-size: 90px;
+            font-weight: 400;
+            color: #4285f4;
+            margin-bottom: 30px;
+            letter-spacing: -5px;
+        }
+
+        .logo .f1 { color: #4285f4; }
+        .logo .i { color: #ea4335; }
+        .logo .n { color: #fbbc04; }
+        .logo .d { color: #4285f4; }
+        .logo .e { color: #34a853; }
+        .logo .r { color: #ea4335; }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 20px;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 584px;
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            height: 56px;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            padding: 0 50px 0 20px;
+            font-size: 16px;
+            outline: none;
+            transition: box-shadow 0.2s;
+            box-shadow: 0 2px 5px 1px rgba(64,60,67,.16);
+        }
+
+        .search-box:hover {
+            box-shadow: 0 2px 8px 1px rgba(64,60,67,.24);
+        }
+
+        .search-box:focus {
+            border: 1px solid #4285f4;
+            box-shadow: 0 2px 8px 1px rgba(64,60,67,.24);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9aa0a6;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: 1px solid #f0f0f0;
+            border-radius: 24px;
+            background: #f8f9fa;
+            color: #3c4043;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            box-shadow: 0 1px 1px rgba(0,0,0,.1);
+            background: #f1f3f4;
+        }
+
+        .btn:active {
+            background: #e8eaed;
+        }
+
+        .results-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        .result-item {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s;
+        }
+
+        .result-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .result-name {
+            font-size: 18px;
+            font-weight: 500;
+            color: #1a0dab;
+            margin-bottom: 5px;
+        }
+
+        .result-location {
+            font-size: 14px;
+            color: #5f6368;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #1a73e8;
+            font-size: 24px;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #3c4043;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #1557b0;
+        }
+
+        .btn-secondary {
+            background-color: #f8f9fa;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f1f3f4;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #5f6368;
+            font-size: 16px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <span class="f1">F</span><span class="i">i</span><span class="n">n</span><span class="d">d</span><span class="e">e</span><span class="r">r</span>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchInput" placeholder="Search for items in your house..." autocomplete="off">
+            <span class="search-icon" onclick="performSearch()">🔍</span>
+        </div>
+        
+        <div class="buttons-container">
+            <button class="btn" onclick="openUpdateModal()">Update Location</button>
+            <button class="btn" onclick="openAddModal()">Add Item</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="results-container" id="resultsContainer"></div>
+    </div>
+
+    <!-- Add Item Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('addModal')">&times;</span>
+            <h2>Add New Item</h2>
+            <div class="form-group">
+                <label for="itemName">Item Name:</label>
+                <input type="text" id="itemName" placeholder="e.g., clear tape, scissors, etc.">
+            </div>
+            <div class="form-group">
+                <label for="itemLocation">Location:</label>
+                <input type="text" id="itemLocation" placeholder="e.g., bathroom, kitchen drawer, shoe box">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" onclick="closeModal('addModal')">Cancel</button>
+                <button class="modal-btn btn-primary" onclick="addItem()">Add Item</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Location Modal -->
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('updateModal')">&times;</span>
+            <h2>Update Item Location</h2>
+            <div class="form-group">
+                <label for="updateItemSelect">Select Item:</label>
+                <select id="updateItemSelect">
+                    <option value="">Choose an item...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="updateLocation">New Location:</label>
+                <input type="text" id="updateLocation" placeholder="Enter new location">
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" onclick="closeModal('updateModal')">Cancel</button>
+                <button class="modal-btn btn-primary" onclick="updateItem()">Update Location</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize with some sample data
+        let items = {
+            "clear tape": "bathroom",
+            "scissors": "kitchen drawer",
+            "batteries": "shoe box",
+            "phone charger": "bedroom nightstand",
+            "flashlight": "garage toolbox",
+            "first aid kit": "bathroom cabinet",
+            "super glue": "office desk drawer",
+            "measuring tape": "garage",
+            "markers": "office supplies cabinet",
+            "extension cord": "basement storage"
+        };
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length > 0) {
+                performSearch();
+            } else {
+                document.getElementById('resultsContainer').innerHTML = '';
+            }
+        });
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            if (!query) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            const results = [];
+            for (const [item, location] of Object.entries(items)) {
+                if (item.toLowerCase().includes(query)) {
+                    results.push({ item, location });
+                }
+            }
+
+            displayResults(results, query);
+        }
+
+        function displayResults(results, query) {
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            if (results.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="no-results">
+                        No items found matching "${query}". Try adding it using the "Add Item" button above.
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            results.forEach(result => {
+                html += `
+                    <div class="result-item">
+                        <div class="result-name">${capitalizeFirst(result.item)}</div>
+                        <div class="result-location">Location: ${capitalizeFirst(result.location)}</div>
+                    </div>
+                `;
+            });
+            
+            resultsContainer.innerHTML = html;
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // Modal functions
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'block';
+            document.getElementById('itemName').focus();
+        }
+
+        function openUpdateModal() {
+            const select = document.getElementById('updateItemSelect');
+            select.innerHTML = '<option value="">Choose an item...</option>';
+            
+            for (const item of Object.keys(items).sort()) {
+                select.innerHTML += `<option value="${item}">${capitalizeFirst(item)}</option>`;
+            }
+            
+            document.getElementById('updateModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            clearModalInputs();
+        }
+
+        function clearModalInputs() {
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemLocation').value = '';
+            document.getElementById('updateItemSelect').value = '';
+            document.getElementById('updateLocation').value = '';
+        }
+
+        // Add item functionality
+        function addItem() {
+            const name = document.getElementById('itemName').value.trim().toLowerCase();
+            const location = document.getElementById('itemLocation').value.trim().toLowerCase();
+            
+            if (!name || !location) {
+                alert('Please fill in both item name and location.');
+                return;
+            }
+            
+            items[name] = location;
+            closeModal('addModal');
+            
+            // Show success feedback
+            alert(`"${capitalizeFirst(name)}" has been added to ${capitalizeFirst(location)}!`);
+            
+            // If there's a current search, refresh results
+            const currentQuery = document.getElementById('searchInput').value;
+            if (currentQuery) {
+                performSearch();
+            }
+        }
+
+        // Update item functionality
+        function updateItem() {
+            const itemName = document.getElementById('updateItemSelect').value;
+            const newLocation = document.getElementById('updateLocation').value.trim().toLowerCase();
+            
+            if (!itemName || !newLocation) {
+                alert('Please select an item and enter a new location.');
+                return;
+            }
+            
+            const oldLocation = items[itemName];
+            items[itemName] = newLocation;
+            closeModal('updateModal');
+            
+            // Show success feedback
+            alert(`"${capitalizeFirst(itemName)}" location updated from ${capitalizeFirst(oldLocation)} to ${capitalizeFirst(newLocation)}!`);
+            
+            // If there's a current search, refresh results
+            const currentQuery = document.getElementById('searchInput').value;
+            if (currentQuery) {
+                performSearch();
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const addModal = document.getElementById('addModal');
+            const updateModal = document.getElementById('updateModal');
+            
+            if (event.target === addModal) {
+                closeModal('addModal');
+            }
+            if (event.target === updateModal) {
+                closeModal('updateModal');
+            }
+        }
+
+        // Auto-populate update location when item is selected
+        document.getElementById('updateItemSelect').addEventListener('change', function() {
+            const selectedItem = this.value;
+            const updateLocationInput = document.getElementById('updateLocation');
+            
+            if (selectedItem && items[selectedItem]) {
+                updateLocationInput.value = items[selectedItem];
+                updateLocationInput.focus();
+                updateLocationInput.select();
+            } else {
+                updateLocationInput.value = '';
+            }
+        });
+    </script>
+</body>
+</html>
